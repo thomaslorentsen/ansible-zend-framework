@@ -1,0 +1,35 @@
+---
+- name: check zend framework is installed
+  stat:
+    path: /usr/share/php/Zend
+  register: zf
+
+- block:
+  - name: unarchive
+    unarchive:
+      src: "https://packages.zendframework.com/releases/ZendFramework-{{ zf_version }}/ZendFramework-{{ zf_version }}-minimal.tar.gz"
+      dest: /tmp/
+      remote_src: yes
+      creates: "/tmp/ZendFramework-{{ zf_version }}-minimal/"
+
+  # https://framework.zend.com/manual/1.12/en/performance.classloading.html#performance.classloading.striprequires
+  - name: strip require once calls
+    shell: find /tmp/ZendFramework-{{ zf_version }}-minimal/library -name '*.php' -not -wholename '*/Loader/Autoloader.php' -not -wholename '*/Application.php' -print0 | xargs -0 sed --regexp-extended --in-place 's/(require_once)/\/\/ \1/g'
+
+  - name: create directory for php
+    file:
+      path: /usr/share/php
+      state: directory
+
+  - name: move to share
+    command: mv /tmp/ZendFramework-{{ zf_version }}-minimal/library/Zend /usr/share/php
+    args:
+      creates: /usr/share/php/Zend
+
+  - name: clean up
+    file:
+      dest: /tmp/ZendFramework-{{ zf_version }}-minimal
+      state: absent
+
+  when: zf.stat.isreg is not defined
+...
