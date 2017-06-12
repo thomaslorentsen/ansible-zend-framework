@@ -1,7 +1,7 @@
 ---
 - name: check zend framework is installed
   stat:
-    path: /usr/share/php/Zend
+    path: "{{ zf_path }}/Zend"
   register: zf
 
 - block:
@@ -15,6 +15,7 @@
   # https://framework.zend.com/manual/1.12/en/performance.classloading.html#performance.classloading.striprequires
   - name: strip require once calls
     shell: find /tmp/ZendFramework-{{ zf_version }}-minimal/library -name '*.php' -not -wholename '*/Loader/Autoloader.php' -not -wholename '*/Application.php' -print0 | xargs -0 sed --regexp-extended --in-place 's/(require_once)/\/\/ \1/g'
+    when: strip_zf_requires
 
   - name: create directory for php
     file:
@@ -22,9 +23,9 @@
       state: directory
 
   - name: move to share
-    command: mv /tmp/ZendFramework-{{ zf_version }}-minimal/library/Zend /usr/share/php
+    command: mv /tmp/ZendFramework-{{ zf_version }}-minimal/library/Zend "{{ zf_path }}"
     args:
-      creates: /usr/share/php/Zend
+      creates: "{{ zf_path }}/Zend"
 
   - name: clean up
     file:

@@ -13,6 +13,10 @@ Role Variables
 
 The version installed can be set with ```zf_version``` variable.
 
+Zend Frameworks installation path can be set with ```zf_path```.
+
+Require statements can be stripped out for optimisation with ```strip_zf_requires```.
+
 Dependencies
 ------------
 
